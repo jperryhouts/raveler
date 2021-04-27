@@ -87,8 +87,16 @@ stringify(const vector<double> &image,
 
         for (int pin=0; pin<k; ++pin)
           {
+            bool recently_visited = false;
+
+            for (int n=1; (n < 3) && (n < path.size()); ++n)
+              recently_visited |= (path[path.size()-n] == pin);
+
+            if (recently_visited)
+              continue;
+
             double pin_score = get_score(previous_pin, pin, k, weight,
-                                        residual, lines, line_lengths);
+                                         residual, lines, line_lengths);
             if (pin_score > score)
               {
                 score = pin_score;
