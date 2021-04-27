@@ -197,8 +197,12 @@ async function init() {
   // Finally, listen for user input.
   document.addEventListener('keypress', (evt) => {
     let binder = document.getElementById("incrementBinding");
-    if (evt.target === binder || debounceLock)
+    if (evt.target === binder) {
       return;
+    } else if (debounceLock) {
+      evt.preventDefault();
+      return;
+    }
 
     let code = binder.value.toLowerCase();
     let acceptable = evt.key.toLowerCase() == code ||
