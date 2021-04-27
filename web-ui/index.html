@@ -1,0 +1,106 @@
+<meta charset="UTF-8">
+
+<html>
+  <head>
+    <style>
+      .activeRow {
+        line-height: 2em;
+        background-color: lightblue !important;
+      }
+      .activeCell {
+        font-weight: bold;
+        font-size: x-large;
+        color: red;
+      }
+      .label {
+        font-size: x-small;
+        font-family: monospace;
+        font-weight: lighter;
+        text-align: left;
+        vertical-align:text-bottom;
+        color: #888;
+      }
+      .divTable
+      {
+        display:  table;
+        width:auto;
+        margin: 1em auto;
+        border-spacing:5px;/*cellspacing:poor IE support for  this*/
+        /* border-collapse:separate;*/
+        background-color: rgb(241, 241, 241);
+      }
+      .even {
+        background-color:rgb(197, 197, 197)
+      }
+      div.item {
+        cursor: pointer;
+      }
+
+      .divRow
+      {
+        display:table-row;
+        width:auto;
+      }
+
+      .divCell
+      {
+          float:left;/*fix for  buggy browsers*/
+          display:table-column;
+          width: 2.5em;
+          margin:0.5em;
+      }
+      #fullImg {
+        position: fixed;
+        top: 1.5%;
+        right: 15px;
+        max-height: 48%;
+      }
+      #partImg {
+        position: fixed;
+        bottom: 1.5%;
+        right: 15px;
+        max-height: 48%;
+      }
+      #ListContent {
+        /* Firefox */
+        width: -moz-calc(100% - 465px);
+        /* WebKit */
+        width: -webkit-calc(100% - 465px);
+        /* Opera */
+        width: -o-calc(100% - 465px);
+        /* Standard */
+        width: calc(100% - 465px);
+      }
+      #intro-div {
+        max-width: 380px;
+        margin: 1em auto;
+        padding: 1em;
+      }
+    </style>
+    <title>Raveler</title>
+    <script type='text/javascript' src='/js/app.js'></script>
+  </head>
+  <body>
+    <div id="ListContent">
+      <div id="intro-div">
+         <h3>Welcome to Raveler.</h3>
+
+         <p>
+           This tool assists with creating a thread artwork by reading numbers to you as you go.
+           Clicking on a number will set the currently active position, from there you can increment
+           the active position using your keyboard and the keybinding below. This is most efficiently
+           done using a USB foot pedal button.
+         </p>
+
+         <p>
+          <label for="incrementBinding">Key binding:</label>
+          <input id="incrementBinding" name="incrementBinding" value="space">
+         </p>
+      </div>
+
+      <div id="pinList"></div>
+    </div>
+    <canvas id="fullImg" width="500" height="500"></canvas>
+    <canvas id="partImg" width="500" height="500"></canvas>
+  </body>
+</html>
