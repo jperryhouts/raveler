@@ -104,7 +104,7 @@ async function init() {
     };
     for (let fmt of ['opus', 'ogg', 'mp3', 'wav']) {
       let src = document.createElement('source');
-      src.setAttribute('src', `/sounds_${fmt}/${nPad}.${fmt}`);
+      src.setAttribute('src', `/web/sounds_${fmt}/${nPad}.${fmt}`);
       src.setAttribute('type', types[fmt]);
       clip.appendChild(src);
     }
@@ -113,7 +113,7 @@ async function init() {
     document.body.appendChild(clip);
   }
 
-  const uri = '/pattern.json';
+  const uri = '/web/pattern.json';
   const design = await fetch(uri).then(res => res.json());
 
   // Provides closure for the coords variable.
