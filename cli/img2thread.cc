@@ -6,6 +6,7 @@ print_help()
     std::cout << "usage: img2thread [args] <INPUT>\n\n"
               << "arguments:\n"
               << "  --help,-h      Show this message and quit\n"
+              << "  --invert,-i    Invert the image (use black thread on white canvas)\n"
               << "  --output,-o    Specify an output location (use \"-\" for stdin)\n"
               << "  --num-pins,-k  Number of pins on your frame (default: 300)\n"
               << "  --num-lines,-n Number of lines to draw before stopping (default: 4000)\n"
@@ -136,7 +137,8 @@ stringify(const vector<double> &image,
 int
 load_image(const string &fname,
            vector<double> &pixels,
-           const int res)
+           const int res,
+           const bool white_thread)
   {
     Magick::Image image;
     try
@@ -158,8 +160,9 @@ load_image(const string &fname,
           }
 
         image.resize(Magick::Geometry(res,res));
-        image.negate(true);
-        image.normalize();
+        if (!white_thread)
+          image.negate(true);
+        // image.normalize();
         image.flip();
 
         image.write(0, 0, res, res, "R", Magick::DoublePixel, &pixels[0]);
@@ -183,6 +186,7 @@ int main(int argc, char* argv[])
     string input = "";
     string output = "-";
     string format = "csv";
+    bool white_thread = false;
 
     int i=1;
     for (; i < argc; ++i)
@@ -193,7 +197,9 @@ int main(int argc, char* argv[])
             print_help();
             return 0;
           }
-        if (arg == "-k" || arg == "--num-pins")
+        else if (arg == "-i" || arg == "--invert")
+          white_thread = true;
+        else if (arg == "-k" || arg == "--num-pins")
           sscanf(argv[++i], "%d", &k);
         else if (arg == "-n" || arg == "--num-lines" || arg == "-N")
           sscanf(argv[++i], "%d", &N);
@@ -235,7 +241,7 @@ int main(int argc, char* argv[])
     else
       {
         image.resize(res*res);
-        int status = load_image(input, image, res);
+        int status = load_image(input, image, res, white_thread);
         if (status != 0)
           return status;
       }
@@ -274,19 +280,26 @@ int main(int argc, char* argv[])
       }
     else if (format == "svg")
       {
-        //int frame = 585; // in millimeters
-
         const int i_frame_size = (int) (1000 * frame_size);
         result << "<svg xmlns=\"http://www.w3.org/2000/svg\""
           << " viewbox=\"0 0 " << i_frame_size << " " << i_frame_size << "\">"
           << endl;
 
+        result << "  <rect"
+          << " width=\"" << i_frame_size << "\""
+          << " height=\"" << i_frame_size << "\""
+          << " fill=\""
+          << (white_thread ? "black" : "white")
+          << "\"/>" << endl;
+
         double stroke_width = weight / frame_size;
+        string stroke_color = white_thread ? "white" : "black";
         for (int i=0; i<path.size()-1; ++i)
           {
             pair<double,double> xy0 = pin_to_xy(path[i], k);
             pair<double,double> xy1 = pin_to_xy(path[i+1], k);
-            result << "  <line stroke=\"black\" stroke-width=\"" << stroke_width << "\""
+            result << "  <line stroke=\"" << stroke_color << "\""
+              << " stroke-width=\"" << stroke_width << "\""
               << " x1=\"" << i_frame_size * xy0.first  << "\""
               << " y1=\"" << i_frame_size * (1.0 - xy0.second) << "\""
               << " x2=\"" << i_frame_size * xy1.first  << "\""

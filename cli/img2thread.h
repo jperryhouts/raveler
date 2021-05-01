@@ -156,7 +156,8 @@ stringify(const vector<unsigned char> &img,
 int
 load_image(const string &fname,
            vector<double> &pixels,
-           const int res);
+           const int res,
+           const bool white_thread);
 
 void
 print_help();
