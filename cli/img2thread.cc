@@ -8,6 +8,7 @@ print_help()
               << "  --help,-h      Show this message and quit\n"
               << "  --output,-o    Specify an output location (use \"-\" for stdin)\n"
               << "  --num-pins,-k  Number of pins on your frame (default: 300)\n"
+              << "  --num-lines,-n Number of lines to draw before stopping (default: 4000)\n"
               << "  --weight,-w    Thickness of the thread in meters (default: 100e-6)\n"
               << "  --res,-r       Before processing, scale the input image to this pixel\n"
               << "                 size along its shortest axis (default: 600)\n"
@@ -194,7 +195,7 @@ int main(int argc, char* argv[])
           }
         if (arg == "-k" || arg == "--num-pins")
           sscanf(argv[++i], "%d", &k);
-        else if (arg == "-N" || arg == "--num-lines")
+        else if (arg == "-n" || arg == "--num-lines" || arg == "-N")
           sscanf(argv[++i], "%d", &N);
         else if (arg == "-w" || arg == "--weight")
           sscanf(argv[++i], "%f", &weight);
