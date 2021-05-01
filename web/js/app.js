@@ -139,7 +139,7 @@ async function init() {
   // Now, actually fill the table with this sequence
   // of pin indices.
   ////////////////////////////////
-  let sequence = design.pinSequence.map((pinNumber, idx) => {
+  let sequence = design.pins.map((pinNumber, idx) => {
     let e = document.createElement('div');
     e.setAttribute('id', `pin-${idx}`);
     e.textContent = pinNumber.toString();
@@ -167,7 +167,7 @@ async function init() {
   // Map pin sequence to coordinates and store in global
   // scope..
   ///////////////////////////////
-  let coords = design.pinSequence.map(pinNumber => {
+  let coords = design.pins.map(pinNumber => {
     let theta = 2.0 * Math.PI * pinNumber / 300;
     // TODO: This is backwards on purpose for now.
     let x = IMG_RES*(0.5 - Math.sin(theta)/2.0);
