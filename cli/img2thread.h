@@ -32,6 +32,7 @@
 #include <Magick++.h>
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <utility>
 #include <assert.h>
@@ -156,3 +157,6 @@ int
 load_image(const string &fname,
            vector<double> &pixels,
            const int res);
+
+void
+print_help();
