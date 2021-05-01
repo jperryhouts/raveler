@@ -169,9 +169,8 @@ async function init() {
   ///////////////////////////////
   let coords = design.pins.map(pinNumber => {
     let theta = 2.0 * Math.PI * pinNumber / 300;
-    // TODO: This is backwards on purpose for now.
-    let x = IMG_RES*(0.5 - Math.sin(theta)/2.0);
-    let y = IMG_RES*(0.5 + Math.cos(theta)/2.0);
+    let x = IMG_RES*(0.5 + Math.sin(theta)/2.0);
+    let y = IMG_RES*(0.5 - Math.cos(theta)/2.0);
     return [x, y];
   });
 

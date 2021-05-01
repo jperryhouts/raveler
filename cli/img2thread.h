@@ -47,41 +47,41 @@ int
 ij_to_loc(const int i,
           const int j,
           const int res)
-    {
+  {
     return res*j + i;
-    }
+  }
 
 inline
 int
 xy_to_loc(const double x,
           const double y,
           const int res)
-    {
+  {
     int i = (int) ((res-1) * x);
     int j = (int) ((res-1) * y);
     return ij_to_loc(i, j, res);
-    }
+  }
 
 inline
 pair<double,double>
 pin_to_xy(const int pin,
           const int k)
-    {
+  {
     double theta = 2.0 * M_PI * pin / k;
-    double x = sin(theta)/2.0 + 0.5;
-    double y = cos(theta)/2.0 + 0.5;
+    double x = 0.5 + sin(theta)/2.0;
+    double y = 0.5 + cos(theta)/2.0;
     return pair<double,double>(x, y);
-    }
+  }
 
 inline
 int
 pin_to_loc (const int pin,
             const int k,
             const int res)
-    {
+  {
     pair<double,double> pos = pin_to_xy(pin, k);
     return xy_to_loc(pos.first, pos.second, res);
-    }
+  }
 
 /*
  * Find locations of pixels along line between two points.

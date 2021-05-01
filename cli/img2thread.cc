@@ -159,6 +159,7 @@ load_image(const string &fname,
         image.resize(Magick::Geometry(res,res));
         image.negate(true);
         image.normalize();
+        image.flip();
 
         image.write(0, 0, res, res, "R", Magick::DoublePixel, &pixels[0]);
       }
@@ -242,7 +243,7 @@ int main(int argc, char* argv[])
     vector<vector<int>> lines = get_all_lines(k, res, lengths);
 
     vector<double> scores(1, 0.0);
-    vector<int> path(1, 1);
+    vector<int> path(1, 0);
 
     // ~210 ms for 13000 lines at weight = 0.005
     stringify(image, k, lines, lengths, N, weight, path, scores);
@@ -286,9 +287,9 @@ int main(int argc, char* argv[])
             pair<double,double> xy1 = pin_to_xy(path[i+1], k);
             result << "  <line stroke=\"black\" stroke-width=\"" << stroke_width << "\""
               << " x1=\"" << i_frame_size * xy0.first  << "\""
-              << " y1=\"" << i_frame_size * xy0.second << "\""
+              << " y1=\"" << i_frame_size * (1.0 - xy0.second) << "\""
               << " x2=\"" << i_frame_size * xy1.first  << "\""
-              << " y2=\"" << i_frame_size * xy1.second << "\" />"
+              << " y2=\"" << i_frame_size * (1.0 - xy1.second) << "\" />"
               << endl;
           }
 
