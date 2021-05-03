@@ -152,6 +152,10 @@ stringify(const vector<unsigned char> &img,
           vector<int> &path,
           vector<double> &scores);
 
+double
+get_length(const vector<int> &path,
+           const int k,
+           const double frame_size);
 
 int
 load_image(const string &fname,

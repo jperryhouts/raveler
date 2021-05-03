@@ -1,5 +1,5 @@
 
-all: img2thread
+all: raveler
 
 .PHONY:
 checkDepends:
@@ -9,6 +9,6 @@ checkDepends:
 		echo -e " sudo apt install graphicsmagick-libmagick-dev-compat\n"; \
 		exit 1 ; fi'
 
-img2thread: img2thread.cc img2thread.h checkDepends
+raveler: raveler.cc raveler.h checkDepends
 	c++ -o "$@" "$<" `Magick++-config --cxxflags --cppflags --ldflags --libs`
 

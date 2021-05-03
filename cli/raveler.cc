@@ -1,4 +1,4 @@
-#include "img2thread.h"
+#include "raveler.h"
 
 void
 print_help()
@@ -134,6 +134,23 @@ stringify(const vector<double> &image,
       }
   }
 
+double
+get_length(const vector<int> &path,
+           const int k,
+           const double frame_size)
+  {
+    double length = 0;
+    for (int i=0; i<path.size()-1; ++i)
+      {
+        pair<double,double> xy0 = pin_to_xy(path[i], k);
+        pair<double,double> xy1 = pin_to_xy(path[i+1], k);
+        double dx = frame_size * (xy1.first - xy0.first);
+        double dy = frame_size * (xy1.second - xy0.second);
+        length += sqrt(dx*dx + dy*dy);
+      }
+    return length;
+  }
+
 int
 load_image(const string &fname,
            vector<double> &pixels,
@@ -255,6 +272,8 @@ int main(int argc, char* argv[])
     // ~210 ms for 13000 lines at weight = 0.005
     stringify(image, k, lines, lengths, N, weight, path, scores);
 
+    const double thread_length = get_length(path, k, frame_size);
+
     // output data stream:
     streambuf* buf;
     ofstream of;
@@ -269,6 +288,7 @@ int main(int argc, char* argv[])
     if (format == "tsv" || format == "csv")
       {
         string sep = (format == "csv") ? "," : "\t";
+        result << "#total thread length: " << thread_length << endl;
         result << "#pin" << sep << "score" << sep
               << "coord_x" << sep << "coord_y" << endl;
         for (int i=0; i<path.size(); ++i)
@@ -312,6 +332,8 @@ int main(int argc, char* argv[])
     else if (format == "json")
       {
         result << "{" << std::endl;
+
+        result << "  \"length\": " << thread_length << "," << endl;
 
         {
           result << "  \"pins\": [";
