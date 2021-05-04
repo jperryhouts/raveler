@@ -1,21 +1,19 @@
-/* Compiling:
+/*
+  Raveler
+  Copyright (C) 2021 Jonathan Perry-Houts
 
-  c++ -o raveler ravelcli.cc `Magick++-config --cxxflags --cppflags --ldflags --libs`
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-*/
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-
-/* Example usage:
-
-    convert original.jpg -gravity center -extent 1:1 -resize @10000 -size 100x100 -depth 8 GRAY:- \
-        | raveler -r 100 -k 256 -N 1000 - > threads.txt
-
-  or:
-
-    raveler -r 100 -k 256 -w 0.05 -N 2000 original.jpg > threads.txt
-
-  python3 -c "from pylab import *; p,s,x,y = loadtxt('threads.txt').T; plot(x,1-y,'k-',lw=110/len(p)); gca().set_aspect(1); show()"
-
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "libraveler.h"
@@ -25,6 +23,14 @@ void
 print_help()
   {
     std::cout << "usage: img2thread [args] <INPUT>\n\n"
+
+              << "Raveler  Copyright (C) 2021 Jonathan Perry-Houts\n"
+              << "This program comes with ABSOLUTELY NO WARRANTY.\n"
+              << "This is free software, and you are welcome to redistribute it\n"
+              << "under certain conditions. See the LICENSE file in the project's\n"
+              << "source code repository for details:\n"
+              << "https://raw.githubusercontent.com/jperryhouts/raveler/main/LICENSE\n\n"
+
               << "arguments:\n"
               << "  --help,-h      Show this message and quit\n"
               << "  --invert,-i    Invert the image (use black thread on white canvas)\n"
@@ -133,8 +139,7 @@ int main(int argc, char* argv[])
         return 1;
       }
 
-    weight = (weight == 0) ? 50.0/N : weight;
-    weight *= 1000;
+    weight *= 1000 / frame_size;
 
     vector<double> image;
     if (input == "-")
@@ -155,16 +160,16 @@ int main(int argc, char* argv[])
           return status;
       }
 
-    vector<int> lengths(k*k, -1);
-    vector<vector<int>> lines = get_all_lines(k, res, lengths);
+    const int max_line_length = (int) sqrt(2*res*res);
+    vector<vector<int>> lines(k*k, vector<int>(max_line_length, -1));
+    Raveler::fill_line_masks(k, res, lines);
 
-    vector<double> scores(1, 0.0);
-    vector<int> path(1, 0);
-
+    vector<double> scores(N);
+    vector<int> path(N+1);
     // ~210 ms for 13000 lines at weight = 0.005
-    stringify(image, k, lines, lengths, N, weight, path, scores);
+    Raveler::do_ravel(image, weight, k, N, lines, path, scores);
 
-    const double thread_length = get_length(path, k, frame_size);
+    const double thread_length = Raveler::get_length(path, k, frame_size);
 
     // output data stream:
     streambuf* buf;
@@ -185,7 +190,7 @@ int main(int argc, char* argv[])
               << "coord_x" << sep << "coord_y" << endl;
         for (int i=0; i<path.size(); ++i)
           {
-            pair<double,double> xy = pin_to_xy(path[i], k);
+            pair<double,double> xy = Raveler::pin_to_xy(path[i], k);
             result << path[i]  << sep << scores[i] << sep
                   << xy.first << sep << xy.second << endl;
           }
@@ -208,8 +213,8 @@ int main(int argc, char* argv[])
         string stroke_color = white_thread ? "white" : "black";
         for (int i=0; i<path.size()-1; ++i)
           {
-            pair<double,double> xy0 = pin_to_xy(path[i], k);
-            pair<double,double> xy1 = pin_to_xy(path[i+1], k);
+            pair<double,double> xy0 = Raveler::pin_to_xy(path[i], k);
+            pair<double,double> xy1 = Raveler::pin_to_xy(path[i+1], k);
             result << "  <line stroke=\"" << stroke_color << "\""
               << " stroke-width=\"" << stroke_width << "\""
               << " x1=\"" << i_frame_size * xy0.first  << "\""
@@ -248,16 +253,15 @@ int main(int argc, char* argv[])
           pair<double,double> xy;
           for (int i=0; i<path.size()-1; ++i)
             {
-              xy = pin_to_xy(path[i], k);
+              xy = Raveler::pin_to_xy(path[i], k);
               result << "[" << xy.first << "," << xy.second << "],";
             }
-          xy = pin_to_xy(path[path.size()-1], k);
+          xy = Raveler::pin_to_xy(path[path.size()-1], k);
           result << "[" << xy.first << "," << xy.second << "]";
           result << "]" << endl;
         }
 
         result << "}" << endl;
-
       }
     else
       {

@@ -1,106 +1,106 @@
+/*
+  Raveler
+  Copyright (C) 2021 Jonathan Perry-Houts
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include <sstream>
+#include <cstring>
+
 #include "libraveler.h"
 #include "raveljs.h"
 
-int
-load_image(const string &fname,
-           vector<double> &pixels,
-           const int res,
-           const bool white_thread)
+string
+do_ravel(float weight, float frame_size)
   {
-    Magick::Image image;
-    try
-      {
-        image.read(fname);
-        image.type(Magick::GrayscaleType);
+    vector<int> path(N+1);
+    vector<double> scores(N);
 
-        Magick::Geometry size = image.size();
-        size_t width = size.width(), height = size.height();
+    Raveler::do_ravel(global_image, 1e3*weight/frame_size, K, N, global_line_masks, path, scores);
 
-        if (size.width() != size.height())
-          {
-            size_t cx = width/2, cy = height/2;
-            size_t small_side = width < height ? width : height;
-            size_t xOffset = (width-small_side)/2;
-            size_t yOffset = (height-small_side)/2;
-            Magick::Geometry crop_region(small_side, small_side, xOffset, yOffset);
-            image.crop(crop_region);
-          }
+    std::stringstream result;
 
-        image.resize(Magick::Geometry(res,res));
-        if (!white_thread)
-          image.negate(true);
-        // image.normalize();
-        image.flip();
+    result << "{" << endl;
+    result << "  \"length\": " << Raveler::get_length(path, K, frame_size) << "," << endl;
 
-        image.write(0, 0, res, res, "R", Magick::DoublePixel, &pixels[0]);
-      }
-    catch(Magick::Exception &error_)
-      {
-        cerr << "Caught exception: " << error_.what() << endl;
-        return 1;
-      }
-    return 0;
+    {
+      result << "  \"pins\": [";
+      for (int i=0; i<path.size()-1; ++i)
+        result << path[i] << ",";
+      result << path[path.size()-1];
+      result << "]," << endl;
+    }
+
+    {
+      result << "  \"scores\": [";
+      for (int i=0; i<scores.size()-1; ++i)
+        result << scores[i] << ",";
+      result << scores[scores.size()-1];
+      result << "]" << endl;
+    }
+
+    result << "}" << endl;
+
+    return result.str();
   }
 
-int
-main (int argc, char** argv)
+extern "C"
 {
-    Magick::InitializeMagick(*argv);
+  /*
+  init = Module.cwrap('init', null, []); init();
+  arr = new Uint8Array(600*600);
+  for (let i=0; i<600*600; i++) arr[i] = (Math.random()*255).toFixed();
+  img_buffer = Module._malloc(arr.length*arr.BYTES_PER_ELEMENT);
+  Module.HEAPU8.set(arr, img_buffer);
+  ravel = Module.cwrap('ravel', 'string', ['number','number','number']);
+  result = JSON.parse(ravel(100e-6, 0.622, img_buffer));
+  free = Module.cwrap('free_mem', null, ["number"], [img_buffer]); free(img_buffer);
+  console.log(result);
+  */
 
-    int k=300, N=4000, res=600;
-    float weight = 100e-6, frame_size = 0.622;
-    weight *= 1000;
-    string input = "volcano3.jpg";
-
-    vector<double> image(res*res);
-    int status = load_image(input, image, res, false);
-    if (status != 0)
-        return status;
-
-    vector<int> lengths(k*k, -1);
-    vector<vector<int>> lines = get_all_lines(k, res, lengths);
-
-    vector<double> scores(1, 0.0);
-    vector<int> path(1, 0);
-
-    stringify(image, k, lines, lengths, N, weight, path, scores);
-
-    const double thread_length = get_length(path, k, frame_size);
-
-    std::cout << "{" << std::endl;
-
-    std::cout << "  \"length\": " << thread_length << "," << endl;
-
+  void
+  free_mem(int* loc)
     {
-        std::cout << "  \"pins\": [";
-        for (int i=0; i<path.size()-1; ++i)
-            std::cout << path[i] << ",";
-        std::cout << path[path.size()-1];
-        std::cout << "]," << endl;
+      free(loc);
     }
 
+  char*
+  ravel(float weight, float frame_size, unsigned char* pixels)
     {
-        std::cout << "  \"scores\": [";
-        for (int i=0; i<scores.size()-1; ++i)
-            std::cout << scores[i] << ",";
-        std::cout << scores[scores.size()-1];
-        std::cout << "]," << endl;
-    }
+      cout << "ready" << endl;
 
-    {
-        std::cout << "  \"coords\": [";
-        pair<double,double> xy;
-        for (int i=0; i<path.size()-1; ++i)
+      for (int idx=0; idx<RES2; idx++)
         {
-            xy = pin_to_xy(path[i], k);
-            std::cout << "[" << xy.first << "," << xy.second << "],";
+          double px = (double) pixels[idx];
+          global_image[idx] = 1.0 - px / 255.0;
         }
-        xy = pin_to_xy(path[path.size()-1], k);
-        std::cout << "[" << xy.first << "," << xy.second << "]";
-        std::cout << "]" << endl;
+
+      cout << "set" << endl;
+
+      const string result = do_ravel(weight, frame_size);
+
+      cout << "finished" << endl;
+
+      char* ret = new char[result.length()+1];
+      std::strcpy(ret, result.c_str());
+      return ret;
     }
 
-    std::cout << "}" << endl;
-
-    return 0;
+  void
+  init()
+    {
+      Raveler::fill_line_masks(K, RES, global_line_masks);
+    }
 }
