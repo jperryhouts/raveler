@@ -1,23 +1,3 @@
-/* Compiling:
-
-  c++ -o img2thread img2thread.cc `Magick++-config --cxxflags --cppflags --ldflags --libs`
-
-*/
-
-
-/* Example usage:
-
-    convert original.jpg -gravity center -extent 1:1 -resize @10000 -size 100x100 -depth 8 GRAY:- \
-        | img2thread -r 100 -k 256 -N 1000 - > threads.txt
-
-  or:
-
-    img2thread -r 100 -k 256 -w 0.05 -N 2000 original.jpg > threads.txt
-
-  python3 -c "from pylab import *; p,s,x,y = loadtxt('threads.txt').T; plot(x,1-y,'k-',lw=110/len(p)); gca().set_aspect(1); show()"
-
-*/
-
 //
 // Nomenclature:
 //   res: Resolution of image along one side
@@ -28,8 +8,6 @@
 //   loc: Flattened pixel location (i*res+j)
 //   x,y: Normalized location between 0 and 1.0
 //
-
-#include <Magick++.h>
 
 #include <iostream>
 #include <fstream>
@@ -143,7 +121,7 @@ get_score(const int a,
           const vector<int> &line_lengths);
 
 void
-stringify(const vector<unsigned char> &img,
+stringify(const vector<double> &img,
           const int k,
           const vector<vector<int>> &lines,
           const vector<int> &line_lengths,
@@ -156,12 +134,3 @@ double
 get_length(const vector<int> &path,
            const int k,
            const double frame_size);
-
-int
-load_image(const string &fname,
-           vector<double> &pixels,
-           const int res,
-           const bool white_thread);
-
-void
-print_help();
