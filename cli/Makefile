@@ -8,7 +8,7 @@ cli: build/cli/raveler
 web: build/web/raveler.html
 
 clean:
-	rm -f raveler.data raveler.html raveler.js raveler.wasm
+	rm -f build/web build/cli
 
 checkMagick:
 	@bash -c 'if [ "`which Magick++-config`" == "" ]; then \
@@ -24,17 +24,18 @@ checkEmscripten:
 		echo -e " sudo apt install emscripten\n"; \
 		exit 1 ; fi'
 
-build/cli/raveler: ravelcli.cc ravelcli.h libraveler.cc libraveler.h checkMagick
-	mkdir -p build/cli
-	c++ "libraveler.cc" "ravelcli.cc" -o "$@" `Magick++-config --cxxflags --cppflags --ldflags --libs`
-
-%.gray: %.jpg
+build/%.gray: data/%.jpg
 	convert "$<" -gravity center -extent 1:1 -resize 600 -size 600x600 -depth 8 GRAY:- > "$@"
 
-build/web/raveler.html: raveljs.cc raveljs.h libraveler.cc libraveler.h volcano3.gray checkEmscripten
+build/cli/raveler: src/ravelcli.cc include/ravelcli.h src/libraveler.cc include/libraveler.h
+	@make checkMagick
+	mkdir -p build/cli
+	c++ -o "$@" "src/libraveler.cc" "src/ravelcli.cc" -I./include `Magick++-config --cxxflags --cppflags --ldflags --libs`
+
+build/web/raveler.html: src/raveljs.cc include/raveljs.h src/libraveler.cc include/libraveler.h
+	@make checkEmscripten
 	mkdir -p build/web
-	em++ "libraveler.cc" "raveljs.cc" -o "$@" \
-		--preload-file volcano3.gray \
+	em++ -o "$@" "src/libraveler.cc" "src/raveljs.cc" -I./include \
 		-s WASM=1 -s INITIAL_MEMORY=402653184 \
 		-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' \
 		-s EXPORTED_FUNCTIONS='["_init","_ravel","_free_mem"]' \
