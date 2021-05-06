@@ -1,0 +1,56 @@
+<meta charset="UTF-8">
+
+<html>
+  <head>
+    <title>Raveler</title>
+
+    <link rel="stylesheet" href="web/css/style.css">
+    <link rel="stylesheet" href="web/css/cssload.css">
+
+    <script type='text/javascript' src='web/js/util.js'></script>
+    <script type='text/javascript' src='web/js/designer_app.js'></script>
+    <script async type='text/javascript' src='build/wasm/raveler.js'></script>
+  </head>
+  <body>
+    <div id="overlay">
+      <div class="cssload-container">
+        <div class="cssload-whirlpool"></div>
+      </div>
+    </div>
+
+    <div id="content">
+      <div id="intro-div">
+         <h3>Welcome to Raveler</h3>
+
+         <div>
+            <span>Select an image:</span>
+            <input type="file" id="upload"></input>
+
+          </div>
+
+          <div style="text-align: center;width:100%;margin:0.5em;">
+            <a href="" id="assistant-link" style="visibility:hidden;display:block;">Make it!</a>
+          </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="canvas-div" id="original-div">
+        <canvas id="original" width=600 height=600></canvas>
+      </div>
+      <div class="canvas-div" id="raveled-div">
+        <canvas id="raveled" width=600 height=600></canvas>
+      </div>
+      <div class="canvas-div" id="score-div">
+        <canvas id="score" width=600 height=600></canvas>
+        <canvas id="stop-overlay" width=600 height=600></canvas>
+        <input type="range" min="1" max="6000" value="6000" class="slider" id="stop-slider">
+      </div>
+    </div>
+
+    <div>
+
+    </div>
+
+  </body>
+</html>

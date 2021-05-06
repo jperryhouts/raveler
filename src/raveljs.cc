@@ -16,6 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// #include <iostream>
 #include <sstream>
 #include <cstring>
 
@@ -23,31 +24,26 @@
 #include "raveljs.h"
 
 string
-do_ravel(float weight, float frame_size)
+design_to_json(const design d)
   {
-    vector<int> path(N+1);
-    vector<double> scores(N);
-
-    Raveler::do_ravel(global_image, 1e3*weight/frame_size, K, N, global_line_masks, path, scores);
-
     std::stringstream result;
 
     result << "{" << endl;
-    result << "  \"length\": " << Raveler::get_length(path, K, frame_size) << "," << endl;
+    result << "  \"length\": " << d.length << "," << endl;
 
     {
       result << "  \"pins\": [";
-      for (int i=0; i<path.size()-1; ++i)
-        result << path[i] << ",";
-      result << path[path.size()-1];
+      for (int i=0; i<d.path.size()-1; ++i)
+        result << d.path[i] << ",";
+      result << d.path[d.path.size()-1];
       result << "]," << endl;
     }
 
     {
       result << "  \"scores\": [";
-      for (int i=0; i<scores.size()-1; ++i)
-        result << scores[i] << ",";
-      result << scores[scores.size()-1];
+      for (int i=0; i<d.scores.size()-1; ++i)
+        result << d.scores[i] << ",";
+      result << d.scores[d.scores.size()-1];
       result << "]" << endl;
     }
 
@@ -58,49 +54,41 @@ do_ravel(float weight, float frame_size)
 
 extern "C"
 {
-  /*
-  init = Module.cwrap('init', null, []); init();
-  arr = new Uint8Array(600*600);
-  for (let i=0; i<600*600; i++) arr[i] = (Math.random()*255).toFixed();
-  img_buffer = Module._malloc(arr.length*arr.BYTES_PER_ELEMENT);
-  Module.HEAPU8.set(arr, img_buffer);
-  ravel = Module.cwrap('ravel', 'string', ['number','number','number']);
-  result = JSON.parse(ravel(100e-6, 0.622, img_buffer));
-  free = Module.cwrap('free_mem', null, ["number"], [img_buffer]); free(img_buffer);
-  console.log(result);
-  */
-
-  void
-  free_mem(int* loc)
-    {
-      free(loc);
-    }
-
   char*
-  ravel(float weight, float frame_size, unsigned char* pixels)
+  ravel(float weight, float frame_size)
     {
-      cout << "ready" << endl;
+      cout << "[ravel] ready" << endl;
 
+      vector<double> image(RES2);
       for (int idx=0; idx<RES2; idx++)
         {
-          double px = (double) pixels[idx];
-          global_image[idx] = 1.0 - px / 255.0;
+          double px = (double) global.pixel_buffer[idx];
+          image[idx] = 1.0 - px / 255.0;
         }
 
-      cout << "set" << endl;
+      cout << "[ravel] set" << endl;
 
-      const string result = do_ravel(weight, frame_size);
+      design d;
+      d.path.resize(N+1);
+      d.scores.resize(N);
+      Raveler::do_ravel(image, 1e3*weight/frame_size,
+                        K, N, global.line_masks,
+                        d.path, d.scores);
+      d.length = Raveler::get_length(d.path, K, frame_size);
 
-      cout << "finished" << endl;
-
+      const string result = design_to_json(d);
       char* ret = new char[result.length()+1];
       std::strcpy(ret, result.c_str());
+
+      cout << "[ravel] done" << endl;
       return ret;
     }
 
-  void
+  int
   init()
     {
-      Raveler::fill_line_masks(K, RES, global_line_masks);
+      global.line_masks.resize(K2, vector<int>(850, -1));
+      Raveler::fill_line_masks(K, RES, global.line_masks);
+      return (int) global.pixel_buffer;
     }
 }

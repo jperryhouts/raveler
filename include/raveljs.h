@@ -17,7 +17,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
 #include <vector>
 
 #define N 6000
@@ -28,15 +27,27 @@
 
 using namespace std;
 
-// Must allocate >= sqrt(2*RES2) for each line mask.
-// About 850 in our case.
-vector<vector<int>> global_line_masks(K2, vector<int>(850, -1));
-vector<double> global_image(RES2);
+struct
+{
+  // Must allocate >= sqrt(2*RES2) elements for each line mask.
+  // About 850 in our case.
+  vector<vector<int>> line_masks;
+  unsigned char pixel_buffer[RES2];
+} global;
 
-string do_ravel(float weight, float frame_size);
+struct
+design
+{
+  vector<int> path;
+  vector<double> scores;
+  double length;
+};
+
+string
+design_to_json(const design d);
 
 extern "C"
 {
-  void init();
-  char* ravel(float weight, float frame_size, unsigned char* pixels);
+  int init();
+  char* ravel(float weight, float frame_size);
 }

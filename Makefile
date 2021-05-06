@@ -1,14 +1,14 @@
 
-.PHONY: all cli web clean checkMagick checkEmscripten
+.PHONY: all cli wasm clean checkMagick checkEmscripten
 
-all: cli web
+all: cli wasm
 
 cli: build/cli/raveler
 
-web: build/web/raveler.html
+wasm: build/wasm/raveler.html
 
 clean:
-	rm -f build/web build/cli
+	rm -rf build/wasm build/cli
 
 checkMagick:
 	@bash -c 'if [ "`which Magick++-config`" == "" ]; then \
@@ -29,15 +29,15 @@ build/%.gray: data/%.jpg
 
 build/cli/raveler: src/ravelcli.cc include/ravelcli.h src/libraveler.cc include/libraveler.h
 	@make checkMagick
-	mkdir -p build/cli
+	mkdir -p `dirname "$@"`
 	c++ -o "$@" "src/libraveler.cc" "src/ravelcli.cc" -I./include `Magick++-config --cxxflags --cppflags --ldflags --libs`
 
-build/web/raveler.html: src/raveljs.cc include/raveljs.h src/libraveler.cc include/libraveler.h
+build/wasm/raveler.html: src/raveljs.cc include/raveljs.h src/libraveler.cc include/libraveler.h
 	@make checkEmscripten
-	mkdir -p build/web
+	mkdir -p `dirname "$@"`
 	em++ -o "$@" "src/libraveler.cc" "src/raveljs.cc" -I./include \
 		-s WASM=1 -s INITIAL_MEMORY=402653184 \
 		-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' \
-		-s EXPORTED_FUNCTIONS='["_init","_ravel","_free_mem"]' \
+		-s EXPORTED_FUNCTIONS='["_init","_ravel"]' \
 		-s NO_EXIT_RUNTIME=1 \
-		-O3 --closure 1
+		-s ASYNCIFY -O3 --closure 1

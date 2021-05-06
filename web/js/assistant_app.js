@@ -3,6 +3,7 @@
 const N_COLUMNS = 6;
 const ROWS_PER_BLOCK = 10;
 
+const FRAME_SIZE = 0.582;
 const THREAD_DIA = 150e-6;
 const IMG_RES = 500;
 
@@ -51,41 +52,23 @@ function getCurrent() {
   }
 }
 
-function drawPath(canvas, coords, stop) {
-  let path = new Path2D();
-  path.moveTo(...coords[0]);
-  let coo = coords.filter((v, i) => (i > 0) && (i < stop || stop === null));
-  for (let c of coo)
-    path.lineTo(...c);
-
-  let ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, IMG_RES, IMG_RES);
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = IMG_RES * THREAD_DIA;
-  ctx.stroke(path);
-
-  if (stop) {
-    // Draw the final line in red
-    ctx.beginPath();
-    ctx.moveTo(...coords[stop-1]);
-    ctx.lineTo(...coords[stop]);
-    ctx.strokeStyle = '#F00';
-    ctx.lineWidth = IMG_RES/300;
-    ctx.stroke();
-
-    // Draw a circle at the current pin
-    ctx.beginPath();
-    ctx.moveTo(...coords[stop-1]);
-    ctx.arc(...coords[stop], 4, 0, 2*Math.PI, );
-    ctx.fillStyle = '#F00';
-    ctx.fill();
-  }
-}
-
 function speak(pinNumber) {
   let clip = document.getElementById(`sound-bite-${pinNumber}`);
   clip.currentTime = 0;
   clip.play();
+}
+
+function getThreadLength(coords) {
+  return coords.reduce((total, val, idx, arr) => {
+    if (idx == 0) {
+      return 0;
+    } else {
+      let val0 = arr[idx-1];
+      let dx = val[0] - val0[0];
+      let dy = val[1] - val0[1];
+      return total + FRAME_SIZE * Math.sqrt(dx*dx + dy*dy);
+    }
+  }, 0.0);
 }
 
 async function init() {
@@ -113,10 +96,48 @@ async function init() {
     document.body.appendChild(clip);
   }
 
-  const uri = 'web/pattern.json';
-  const design = await fetch(uri).then(res => res.json());
+  let design;
+  let queryParams = new URLSearchParams(window.location.search);
+  if (queryParams.has('design')) {
+    let uid = queryParams.get('design');
+    design = JSON.parse(localStorage.getItem(uid));
+  } else {
+    design = await fetch('web/pattern.json').then(res => res.json());
+  }
 
-  // Provides closure for the coords variable.
+  console.log(design);
+
+  if (!design || !design.pins) {
+    console.error("Unknown design");
+    document.getElementById("intro-div").style.display = 'none';
+    let errDiv = document.getElementById("error-div");
+    errDiv.style.display = 'block';
+    errDiv.textContent = "Unknown pattern.";
+    return;
+  }
+
+  if (queryParams.has('stop')) {
+    let stop = +queryParams.get('stop');
+    design.pins = design.pins.filter((v,i) => (i < stop));
+  }
+
+  ////////////////////////////////
+  // Map pin sequence to coordinates and store in global
+  // scope..
+  ///////////////////////////////
+  let coords = pins2coords(design.pins, IMG_RES);
+
+  if (!design.length)
+    design.length = getThreadLength(coords);
+
+  let lengthLabel = document.getElementById("length-label");
+  if (design.length > 1000)
+    lengthLabel.textContent = `Thread length: ${(design.length/1000).toFixed(2)} km`;
+  else
+    lengthLabel.textContent = `Thread length: ${design.length.toFixed()} m`;
+
+
+  // Closure for the coords variable.
   const setCurrent = (idx) => {
     [...document.getElementsByTagName('div')].forEach(e => {
       e.classList.remove('activeCell');
@@ -132,7 +153,7 @@ async function init() {
     speak(currentPin);
 
     let canvas = document.getElementById("partImg");
-    drawPath(canvas, coords, idx);
+    drawPath(canvas, coords, idx, IMG_RES, THREAD_DIA, true);
   }
 
   ////////////////////////////////
@@ -163,26 +184,15 @@ async function init() {
     blockStart += N_COLUMNS*ROWS_PER_BLOCK;
   }
 
-  ////////////////////////////////
-  // Map pin sequence to coordinates and store in global
-  // scope..
-  ///////////////////////////////
-  let coords = design.pins.map(pinNumber => {
-    let theta = 2.0 * Math.PI * pinNumber / 300;
-    let x = IMG_RES*(0.5 + Math.sin(theta)/2.0);
-    let y = IMG_RES*(0.5 - Math.cos(theta)/2.0);
-    return [x, y];
-  });
-
   // Now, draw the full example image. The 'partial' image
   // will be updated via `setCurrent()` as the user moves
   // along with the pin sequence.
   let canvas = document.getElementById("fullImg");
   if (canvas.getContext) {
-    drawPath(canvas, coords, null);
+    drawPath(canvas, coords, null, IMG_RES, THREAD_DIA, false);
   }
 
-  // Restore previous
+  // Restore previous key binding settings
   let binder = document.getElementById("incrementBinding");
   if (localStorage.getItem("incrementBinding")) {
     binder.value = localStorage.getItem("incrementBinding");
