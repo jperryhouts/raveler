@@ -97,20 +97,24 @@ function drawPath(canvas, coords, stop, highlight) {
   ctx.lineWidth = IMG_RES * WEIGHT / FRAME_SIZE;
   ctx.stroke(path);
 
-  if (stop && highlight) {
+  if (stop) {
     // Draw the final line in red
     ctx.beginPath();
     ctx.moveTo(...coords[stop-1]);
     ctx.lineTo(...coords[stop]);
-    ctx.strokeStyle = '#F00';
-    ctx.lineWidth = scale/300;
+    if (highlight) {
+      ctx.strokeStyle = '#F00';
+      ctx.lineWidth = 2.5;
+    }
     ctx.stroke();
 
-    // Draw a circle at the current pin
-    ctx.beginPath();
-    ctx.moveTo(...coords[stop-1]);
-    ctx.arc(...coords[stop], 4, 0, 2*Math.PI, );
-    ctx.fillStyle = '#F00';
-    ctx.fill();
+    if (highlight) {
+      // Draw a circle at the current pin
+      ctx.beginPath();
+      ctx.moveTo(...coords[stop-1]);
+      ctx.arc(...coords[stop], 4, 0, 2*Math.PI, );
+      ctx.fillStyle = '#F00';
+      ctx.fill();
+    }
   }
 }
