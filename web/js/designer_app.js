@@ -114,7 +114,8 @@ async function updateDesign(pixels) {
       RAVELER.coords = pins2coords(design.pins, IMG_RES);
 
       let slider = document.getElementById('stop-slider');
-      setStop(slider.value);
+      slider.value = 6000;
+      setStop(6000);
 
       let rCanvas = document.getElementById("raveled");
       drawPath(rCanvas, RAVELER.coords, slider.value, false);
@@ -187,10 +188,4 @@ window.addEventListener("load", () => {
   attachFileUploadListener();
   attachStopSliderListener();
   setStop(6000);
-
-  // for (let cid of ['original', 'raveled', 'score', 'stop-overlay']) {
-  //   let ctx = document.getElementById(cid).getContext('2d');
-  //   ctx.fillStyle = "blue";
-  //   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  // }
 });
