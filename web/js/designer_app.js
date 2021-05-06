@@ -99,7 +99,7 @@ function saveDesign(design) {
   let query = new URLSearchParams();
   query.set("design", RAVELER.uid);
   let anchor = document.getElementById("assistant-link");
-  anchor.href = `/index.html?${query}`;
+  anchor.href = `/assistant.html?${query}`;
   anchor.style.display = "block";
   anchor.style.visibility = "visible";
 }
@@ -176,7 +176,7 @@ function attachStopSliderListener() {
       query.set("stop", slider.value);
 
       let anchor = document.getElementById("assistant-link");
-      anchor.href = `/index.html?${query}`;
+      anchor.href = `/assistant.html?${query}`;
       anchor.style.display = "block";
       anchor.style.visibility = "visible";
     }
