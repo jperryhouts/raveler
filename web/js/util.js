@@ -1,5 +1,9 @@
 "use strict";
 
+const FRAME_SIZE = 0.622;
+const WEIGHT = 70e-6;
+const IMG_RES = 600;
+
 function rgba2gray(pixels) {
   let gray = new Uint8ClampedArray(pixels.length/4);
   for (var i=0; i < gray.length; i++) {
@@ -26,6 +30,25 @@ function newUID() {
       console.warn('Avoided id collision', uid);
     }
   }
+}
+
+function getThreadLength(coords, scale, stop) {
+  let factor = FRAME_SIZE;
+  if (scale)
+    factor *= scale;
+
+  return coords.reduce((total, val, idx, arr) => {
+    if (idx == 0) {
+      return 0;
+    } else if (stop && idx > stop) {
+      return total;
+    } else {
+      let val0 = arr[idx-1];
+      let dx = val[0] - val0[0];
+      let dy = val[1] - val0[1];
+      return total + factor * Math.sqrt(dx*dx + dy*dy);
+    }
+  }, 0.0);
 }
 
 function drawScores(canvas, scores) {
@@ -61,7 +84,7 @@ function drawScores(canvas, scores) {
   ctx.stroke(path);
 }
 
-function drawPath(canvas, coords, stop, scale, weight, highlight) {
+function drawPath(canvas, coords, stop, highlight) {
   let path = new Path2D();
   path.moveTo(...coords[0]);
   let coo = coords.filter((v, i) => (i > 0) && (i < stop || stop === null));
@@ -69,9 +92,9 @@ function drawPath(canvas, coords, stop, scale, weight, highlight) {
     path.lineTo(...c);
 
   let ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, scale, scale);
+  ctx.clearRect(0, 0, IMG_RES, IMG_RES);
   ctx.strokeStyle = '#000';
-  ctx.lineWidth = scale * weight;
+  ctx.lineWidth = IMG_RES * WEIGHT / FRAME_SIZE;
   ctx.stroke(path);
 
   if (stop && highlight) {

@@ -3,10 +3,6 @@
 const N_COLUMNS = 6;
 const ROWS_PER_BLOCK = 10;
 
-const FRAME_SIZE = 0.582;
-const THREAD_DIA = 150e-6;
-const IMG_RES = 500;
-
 function mkBlock(elements, start, nCols, maxRows) {
   let block = document.createElement('div');
   block.className = 'divTable';
@@ -58,19 +54,6 @@ function speak(pinNumber) {
   clip.play();
 }
 
-function getThreadLength(coords) {
-  return coords.reduce((total, val, idx, arr) => {
-    if (idx == 0) {
-      return 0;
-    } else {
-      let val0 = arr[idx-1];
-      let dx = val[0] - val0[0];
-      let dy = val[1] - val0[1];
-      return total + FRAME_SIZE * Math.sqrt(dx*dx + dy*dy);
-    }
-  }, 0.0);
-}
-
 async function init() {
   ///////////////////////////////
   // Pre-load the sound bites
@@ -104,8 +87,6 @@ async function init() {
   } else {
     design = await fetch('web/pattern.json').then(res => res.json());
   }
-
-  console.log(design);
 
   if (!design || !design.pins) {
     console.error("Unknown design");
@@ -153,7 +134,7 @@ async function init() {
     speak(currentPin);
 
     let canvas = document.getElementById("partImg");
-    drawPath(canvas, coords, idx, IMG_RES, THREAD_DIA, true);
+    drawPath(canvas, coords, idx, true);
   }
 
   ////////////////////////////////
@@ -189,7 +170,7 @@ async function init() {
   // along with the pin sequence.
   let canvas = document.getElementById("fullImg");
   if (canvas.getContext) {
-    drawPath(canvas, coords, null, IMG_RES, THREAD_DIA, false);
+    drawPath(canvas, coords, null, false);
   }
 
   // Restore previous key binding settings

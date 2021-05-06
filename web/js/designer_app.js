@@ -33,22 +33,21 @@ function waitForModule() {
   });
 }
 
-async function ravel(pixels, weight, frame_size) {
-  const RES = 600;
-  if (pixels.length !== RES*RES)
+async function ravel(pixels) {
+  if (pixels.length !== IMG_RES*IMG_RES)
     return { error: `Incorrect image dimensions: ${pixels.length}` };
 
   // Rearrange pixels into order expected by raveler
-  let pixelArray = new Uint8ClampedArray(RES*RES);
-  for (let i=0; i<RES; i++) {
+  let pixelArray = new Uint8ClampedArray(IMG_RES*IMG_RES);
+  for (let i=0; i<IMG_RES; i++) {
     for (let j=0; j<600; j++) {
-      pixelArray[RES*(RES-1-i)+j] = pixels[RES*i+j];
+      pixelArray[IMG_RES*(IMG_RES-1-i)+j] = pixels[IMG_RES*i+j];
     }
   }
 
   await waitForModule();
   Module.HEAPU8.set(pixelArray, RAVELER.WASM_buffer);
-  let designJSON = await RAVELER.WASM_ravel(weight, frame_size);
+  let designJSON = await RAVELER.WASM_ravel(WEIGHT, FRAME_SIZE);
   return JSON.parse(designJSON);
 }
 
@@ -57,6 +56,20 @@ function setStop(stop) {
   let ctx = canvas.getContext('2d');
   let w = canvas.width, h = canvas.height;
   ctx.clearRect(0,0,w,h);
+
+  if (RAVELER.coords) {
+    document.getElementById("score-overlay-text").style.display = 'block';
+    document.getElementById("stop-indicator").textContent = `Lines: ${stop}`;
+
+    let lengthLabel = document.getElementById("length-indicator");
+    let threadLength = getThreadLength(RAVELER.coords, 1/600, stop);
+    if (threadLength > 1000)
+      lengthLabel.textContent = `Thread length: ${(threadLength/1000).toFixed(2)} km`;
+    else if (threadLength > 10)
+      lengthLabel.textContent = `Thread length: ${threadLength.toFixed()} m`;
+    else
+      lengthLabel.textContent = `Thread length: ${threadLength.toFixed(2)} m`;
+  }
 
   let scale;
 
@@ -97,20 +110,17 @@ async function updateDesign(pixels) {
   console.log("Applied overlay");
 
   setTimeout(() => {
-    let weight = 72e-6;
-    let frame_size = 0.622;
-    ravel(pixels, weight, frame_size).then(design => {
-      RAVELER.coords = pins2coords(design.pins, 600);
+    ravel(pixels).then(design => {
+      RAVELER.coords = pins2coords(design.pins, IMG_RES);
 
       let slider = document.getElementById('stop-slider');
       setStop(slider.value);
 
       let rCanvas = document.getElementById("raveled");
-      drawPath(rCanvas, RAVELER.coords, slider.value, 600, 150e-6, false);
+      drawPath(rCanvas, RAVELER.coords, slider.value, false);
 
       let sCanvas = document.getElementById("score");
       drawScores(sCanvas, design.scores);
-
 
       saveDesign(design);
 
@@ -159,7 +169,7 @@ function attachStopSliderListener() {
 
     if (RAVELER.coords) {
       let rCanvas = document.getElementById("raveled");
-      drawPath(rCanvas, RAVELER.coords, slider.value, 600, 150e-6, false);
+      drawPath(rCanvas, RAVELER.coords, slider.value, false);
 
       let query = new URLSearchParams();
       query.set("design", RAVELER.uid);
