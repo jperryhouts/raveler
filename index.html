@@ -5,36 +5,56 @@
     <title>Raveler</title>
 
     <link rel="stylesheet" href="web/css/style.css">
+    <link rel="stylesheet" href="web/css/cssload.css">
 
     <script type='text/javascript' src='web/js/util.js'></script>
-    <script type='text/javascript' src='web/js/assistant_app.js'></script>
+    <script type='text/javascript' src='web/js/designer_app.js'></script>
+    <script async type='text/javascript' src='build/wasm/raveler.js'></script>
   </head>
   <body>
-    <div id="ListContent">
-      <div id="intro-div">
-         <h3>Welcome to Raveler.</h3>
-
-         <p>
-           This tool assists with creating a thread artwork by reading numbers to you as you go.
-           Clicking on a number will set the currently active position, from there you can increment
-           the active position using your keyboard and the keybinding below.
-         </p>
-
-         <hr/>
-
-          <div style="display:block;text-align:right;margin-top:1em;">
-            <label for="incrementBinding">Key binding:</label>
-            <input id="incrementBinding" name="incrementBinding" value="space" style="width:7em;">
-            <span id="length-label" style="margin:0.5em;display:block;"></span>
-          </div>
+    <div id="overlay">
+      <div class="cssload-container">
+        <div class="cssload-whirlpool"></div>
       </div>
-
-      <div id="error-div" style="display:none;"></div>
-
-      <div id="pinList"></div>
     </div>
 
-    <canvas id="fullImg" width="600" height="600"></canvas>
-    <canvas id="partImg" width="600" height="600"></canvas>
+    <div id="content">
+      <div id="intro-div">
+         <h3>Welcome to Raveler</h3>
+
+         <div>
+            <span>Select an image:</span>
+            <input type="file" id="upload"></input>
+
+          </div>
+
+          <div style="text-align: center;width:100%;margin:0.5em;">
+            <a href="" id="assistant-link" style="visibility:hidden;display:block;">Make it!</a>
+          </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="canvas-div" id="original-div">
+        <canvas id="original" width=600 height=600></canvas>
+      </div>
+      <div class="canvas-div" id="raveled-div">
+        <canvas id="raveled" width=600 height=600></canvas>
+      </div>
+      <div class="canvas-div" id="score-div">
+        <div id="score-overlay-text">
+          <span id="stop-indicator">Lines: 10</span>
+          <span id="length-indicator">Length: 1km</span>
+        </div>
+        <canvas id="score" width=600 height=600></canvas>
+        <canvas id="stop-overlay" width=600 height=600></canvas>
+        <input type="range" min="1" max="6000" value="6000" class="slider" id="stop-slider">
+      </div>
+    </div>
+
+    <div>
+
+    </div>
+
   </body>
 </html>

@@ -1,0 +1,40 @@
+<meta charset="UTF-8">
+
+<html>
+  <head>
+    <title>Raveler</title>
+
+    <link rel="stylesheet" href="web/css/style.css">
+
+    <script type='text/javascript' src='web/js/util.js'></script>
+    <script type='text/javascript' src='web/js/assistant_app.js'></script>
+  </head>
+  <body>
+    <div id="ListContent">
+      <div id="intro-div">
+         <h3>Welcome to Raveler.</h3>
+
+         <p>
+           This tool assists with creating a thread artwork by reading numbers to you as you go.
+           Clicking on a number will set the currently active position, from there you can increment
+           the active position using your keyboard and the keybinding below.
+         </p>
+
+         <hr/>
+
+          <div style="display:block;text-align:right;margin-top:1em;">
+            <label for="incrementBinding">Key binding:</label>
+            <input id="incrementBinding" name="incrementBinding" value="space" style="width:7em;">
+            <span id="length-label" style="margin:0.5em;display:block;"></span>
+          </div>
+      </div>
+
+      <div id="error-div" style="display:none;"></div>
+
+      <div id="pinList"></div>
+    </div>
+
+    <canvas id="fullImg" width="600" height="600"></canvas>
+    <canvas id="partImg" width="600" height="600"></canvas>
+  </body>
+</html>
