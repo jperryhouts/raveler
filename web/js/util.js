@@ -55,7 +55,6 @@ function drawScores(canvas, scores) {
   let ctx = canvas.getContext('2d');
   let w = ctx.canvas.width;
   let h = ctx.canvas.height;
-  console.log(w, h);
 
   let xRange = [0, scores.length];
   let yRange = scores.reduce((pVal, cVal) => {
@@ -94,7 +93,9 @@ function drawPath(canvas, coords, stop, highlight) {
   let ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, IMG_RES, IMG_RES);
   ctx.strokeStyle = '#000';
-  ctx.lineWidth = IMG_RES * WEIGHT / FRAME_SIZE;
+  // Scaling by a factor of 1.8 seems to best approximate
+  // how the result will actually turn out.
+  ctx.lineWidth = 1.8*IMG_RES * WEIGHT / FRAME_SIZE;
   ctx.stroke(path);
 
   if (stop) {

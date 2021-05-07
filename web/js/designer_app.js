@@ -163,29 +163,66 @@ function attachFileUploadListener() {
   });
 }
 
+function updateMakeItLink() {
+  if (RAVELER.coords) {
+    let slider = document.getElementById('stop-slider');
+
+    let rCanvas = document.getElementById("raveled");
+    drawPath(rCanvas, RAVELER.coords, slider.value, false);
+
+    let query = new URLSearchParams();
+    query.set("stop", slider.value);
+    if (RAVELER.uid) {
+      query.set("design", RAVELER.uid);
+    }
+
+    let anchor = document.getElementById("assistant-link");
+    anchor.href = `assistant.html?${query}`;
+    anchor.style.display = "block";
+    anchor.style.visibility = "visible";
+  }
+}
+
 function attachStopSliderListener() {
   let slider = document.getElementById('stop-slider');
   slider.addEventListener("input", () => {
     setStop(slider.value);
-
-    if (RAVELER.coords) {
-      let rCanvas = document.getElementById("raveled");
-      drawPath(rCanvas, RAVELER.coords, slider.value, false);
-
-      let query = new URLSearchParams();
-      query.set("design", RAVELER.uid);
-      query.set("stop", slider.value);
-
-      let anchor = document.getElementById("assistant-link");
-      anchor.href = `assistant.html?${query}`;
-      anchor.style.display = "block";
-      anchor.style.visibility = "visible";
-    }
+    updateMakeItLink();
   });
 }
 
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
+  let img = new Image();
+  img.onload = () => {
+    const ctx = document.getElementById("original").getContext("2d");
+    let wh = ctx.canvas.width;
+    let iw = img.width, ih = img.height;
+    // Size of crop region (in source coordinates)
+    let sw = Math.min(iw, ih);
+    // Top left corner of visible region (in source coordinates)
+    let sx = (iw-sw)/2;
+    let sy = (ih-sw)/2;
+
+    ctx.clearRect(0, 0, wh, wh);
+    ctx.drawImage(img, sx, sy, sw, sw, 0, 0, wh, wh);
+  }
+  img.src = 'web/volcano.jpg';
+
+  let design = await fetch('web/design.json').then(res => res.json());
+  RAVELER.coords = pins2coords(design.pins, IMG_RES);
+
+  let slider = document.getElementById('stop-slider');
+  slider.value = 3000;
+
+  let rCanvas = document.getElementById("raveled");
+  drawPath(rCanvas, RAVELER.coords, slider.value, false);
+
+  let sCanvas = document.getElementById("score");
+  drawScores(sCanvas, design.scores);
+
   attachFileUploadListener();
   attachStopSliderListener();
-  setStop(6000);
+
+  setStop(slider.value);
+  updateMakeItLink();
 });

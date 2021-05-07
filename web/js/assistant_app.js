@@ -85,7 +85,7 @@ async function init() {
     let uid = queryParams.get('design');
     design = JSON.parse(localStorage.getItem(uid));
   } else {
-    design = await fetch('web/pattern.json').then(res => res.json());
+    design = await fetch('web/design.json').then(res => res.json());
   }
 
   if (!design || !design.pins) {
