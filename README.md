@@ -5,5 +5,5 @@ Try it at [https://jperryhouts.github.io/raveler/](https://jperryhouts.github.io
 
 ![demo](web/demo.gif)
 
-Note: Volcano image (Karymsky volcano, 2004)  
-credit: Alexander Belousov (distributed via imaggeo.egu.eu)
+Image: Karymsky volcano, 2004  
+credit Alexander Belousov (distributed via [imaggeo.egu.eu](https://imaggeo.egu.eu/view/646/)).
