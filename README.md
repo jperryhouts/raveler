@@ -8,13 +8,15 @@ Try it at [https://jperryhouts.github.io/raveler/](https://jperryhouts.github.io
 
 ## Usage
 
-Raveler has two interfaces: a web interface and a command-line interface. More options are available in the CLI version, but the web interface is much more convenient. The web interface is live at [https://jperryhouts.github.io/raveler/](https://jperryhouts.github.io/raveler/). The command-line interface must be compiled locally.
+Raveler has two interfaces: a web interface and a command-line interface. More options are available in the CLI version, including the ability to change the frame size, number of pins, thread weight, thread color, etc. However, the web interface is much more convenient. The web interface is live at [https://jperryhouts.github.io/raveler/](https://jperryhouts.github.io/raveler/) and requires no configuration on your part. The command-line interface must be compiled locally.
+
+### Compiling the CLI app
 
 On Debian/Ubuntu linux that can be accomplished as follows:
 
-Install the Magick++ library dependency:
+Install build dependencies:
 ```bash
-sudo apt install graphicsmagick-libmagick-dev-compat
+sudo apt install build-essential graphicsmagick-libmagick-dev-compat
 ```
 
 Compile the CLI application:
@@ -41,7 +43,7 @@ raveler --help
 This project was inspired by Petros Vrellis ["A New Way to Knit" (2016)](http://artof01.com/vrellis/works/knit.html).
 
 Default image: Karymsky volcano (Kamchatka), 2004. Alexander Belousov  
-CC Attribution-NonCommercial-ShareAlike via [imaggeo.egu.eu](https://imaggeo.egu.eu/view/646/)).
+(CC Attribution-NonCommercial-ShareAlike via [imaggeo.egu.eu](https://imaggeo.egu.eu/view/646/)).
 
 
 ## License
