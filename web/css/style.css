@@ -123,7 +123,9 @@ div.item {
   left: 67vw;
 }
 #stop-slider {
-  width: 100%;
+  width: 93%;
+  margin-left: 3.5%;
+  margin-right: 3.5%;
 }
 #score-overlay-text {
   position: absolute;
