@@ -96,8 +96,8 @@ int main(int argc, char* argv[])
 
     // originals: w = 0.072mm / frame = 0.622m
 
-    int k=300, N=4000, res=600;
-    float weight = 100e-6, frame_size = 0.622;
+    int k=300, N=6000, res=600;
+    float weight = 45e-6, frame_size = 0.622;
     string input = "";
     string output = "-";
     string format = "csv";
@@ -166,7 +166,6 @@ int main(int argc, char* argv[])
 
     vector<double> scores(N);
     vector<int> path(N+1);
-    // ~210 ms for 13000 lines at weight = 0.005
     Raveler::do_ravel(image, weight, k, N, lines, path, scores);
 
     const double thread_length = Raveler::get_length(path, k, frame_size);
