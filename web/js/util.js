@@ -19,7 +19,7 @@
 "use strict";
 
 const FRAME_SIZE = 0.622;
-const WEIGHT = 70e-6;
+const WEIGHT = 44.784e-6;
 const IMG_RES = 600;
 
 function rgba2gray(pixels) {
@@ -111,9 +111,9 @@ function drawPath(canvas, coords, stop, highlight) {
   let ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, IMG_RES, IMG_RES);
   ctx.strokeStyle = '#000';
-  // Scaling by a factor of 1.8 seems to best approximate
+  // Scaling by about 2.5 seems to approximate
   // how the result will actually turn out.
-  ctx.lineWidth = 1.8*IMG_RES * WEIGHT / FRAME_SIZE;
+  ctx.lineWidth = 2.5 * IMG_RES * WEIGHT / FRAME_SIZE;
   ctx.stroke(path);
 
   if (stop) {

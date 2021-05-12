@@ -230,7 +230,7 @@ window.addEventListener("load", async () => {
   RAVELER.coords = pins2coords(design.pins, IMG_RES);
 
   let slider = document.getElementById('stop-slider');
-  slider.value = 3000;
+  slider.value = 4500;
 
   let rCanvas = document.getElementById("raveled");
   drawPath(rCanvas, RAVELER.coords, slider.value, false);
