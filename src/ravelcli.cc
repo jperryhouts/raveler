@@ -18,6 +18,7 @@
 
 #include "libraveler.h"
 #include "ravelcli.h"
+#include <sstream>
 
 void
 print_help()
@@ -34,20 +35,107 @@ print_help()
               << "arguments:\n"
               << "  --help,-h      Show this message and quit\n"
               << "  --invert,-i    Invert the image (use black thread on white canvas)\n"
-              << "  --output,-o    Specify an output location (use \"-\" for stdin)\n"
+              << "  --output,-o    Specify an output location (default: print to stdout)\n"
               << "  --num-pins,-k  Number of pins on your frame (default: 300)\n"
-              << "  --num-lines,-n Number of lines to draw before stopping (default: 4000)\n"
-              << "  --weight,-w    Thickness of the thread in meters (default: 100e-6)\n"
+              << "  --num-lines,-n Number of lines to draw before stopping (default: 6000)\n"
+              << "  --weight,-w    Thickness of the thread in meters (default: 45e-6)\n"
               << "  --res,-r       Before processing, scale the input image to this pixel\n"
               << "                 size along its shortest axis (default: 600)\n"
               << "  --size,-s      Diameter of your frame in meters (default: 0.622)\n"
-              << "  --format,-f    Output format. Can be any of csv|tsv|json|svg\n"
+              << "  --format,-f    Output format. Can be any of csv|tsv|json|svg|tex\n"
               << "                 (default: csv)\n\n"
               << "INPUT            Source image. Can be any image format. Use \"-\"\n"
               << "                 to read from stdin.\n"
               << endl;
   }
 
+string
+path2latex(const vector<int> &path,
+           const int row_width,
+           const int k)
+  {
+    std::stringstream result;
+    result << "\\documentclass[letterpaper,twocolumn]{article}\n"
+      << "\n"
+      << "\\usepackage{amsfonts}\n"
+      << "\\usepackage[english]{babel}\n"
+      << "\\usepackage[T1]{fontenc}\n"
+      << "\\usepackage[utf8]{inputenc}\n"
+      << "\\usepackage{fullpage}\n"
+      << "\\usepackage{array}\n"
+      << "\\usepackage[table]{xcolor}\n"
+      << "\\usepackage{tabularx}\n"
+      << "\\usepackage{tikz}\n"
+      << "\n"
+      << "\\definecolor{lightgray}{gray}{0.75}\n"
+      << "\n"
+      << "\\newcolumntype{T}{>{\\tiny}r} % define a new column type for \\tiny\n"
+      << "\n"
+      << "\\begin{document}\n"
+      << "\n";
+
+    { // Generate the pin index table
+      result << "\\rowcolors{1}{}{lightgray}\n";
+      result << "\\begin{tabularx}{0.95\\linewidth}{T |";
+      for (int i=0; i< row_width; ++i)
+        result << " X";
+      result << "}\n";
+
+      int pos = 0;
+      while (pos < path.size())
+        {
+          result << pos/row_width+1 << " & ";
+          for (int j=0; j<row_width; ++j, ++pos)
+            {
+              if (pos < path.size())
+                result << path[pos];
+              else
+                result << " {} ";
+
+              if (j < row_width-1)
+                result << " & ";
+            }
+
+          if (pos < path.size())
+            {
+              if (pos/row_width%10 == 9)
+                {
+                  result << "\n\\end{tabularx}\n";
+                  result << "\n\\vspace{1.86mm}\n\n";
+                  result << "\\rowcolors{1}{}{lightgray}\n";
+                  result << "\\begin{tabularx}{0.95\\linewidth}{T |";
+                  for (int i=0; i< row_width; ++i)
+                    result << " X";
+                  result << "}\n";
+                }
+              else
+                {
+                  result << "\\\\\n";
+                }
+            }
+        }
+      result << "\n\\end{tabularx}\n\n";
+    }
+
+    // result << "\\begin{figure*}\n";
+    // result << "\\begin{tikzpicture}\n";
+    // result << "  \\draw[black, ultra thin] ";
+    // pair<double,double> xy;
+    // for (int i=0; i<path.size(); ++i)
+    //   {
+    //     xy = Raveler::pin_to_xy(path[i], k);
+    //     result << "(" << 15.24*xy.first << "," << 15.24*xy.second << ")";
+    //     if (i < path.size()-1)
+    //       result << " -- ";
+    //   }
+    // result << ";\n";
+    // result << "\\end{tikzpicture}\n\n";
+    // result << "\\end{figure*}";
+
+    result << "\\end{document}\n\n";
+
+    return result.str();
+  }
 
 int
 load_image(const string &fname,
@@ -261,6 +349,10 @@ int main(int argc, char* argv[])
         }
 
         result << "}" << endl;
+      }
+    else if (format == "tex")
+      {
+        result << path2latex(path, 5, k);
       }
     else
       {

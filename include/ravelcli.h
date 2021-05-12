@@ -23,6 +23,11 @@
 
 using namespace std;
 
+string
+path2latex(const vector<int> &path,
+           const int row_width,
+           const int k);
+
 int
 load_image(const std::string &fname,
            std::vector<double> &pixels,
