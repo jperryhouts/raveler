@@ -33,19 +33,21 @@ print_help()
               << "https://raw.githubusercontent.com/jperryhouts/raveler/main/LICENSE\n\n"
 
               << "arguments:\n"
-              << "  --help,-h      Show this message and quit\n"
-              << "  --invert,-i    Invert the image (use black thread on white canvas)\n"
-              << "  --output,-o    Specify an output location (default: print to stdout)\n"
-              << "  --num-pins,-k  Number of pins on your frame (default: 300)\n"
-              << "  --num-lines,-n Number of lines to draw before stopping (default: 6000)\n"
-              << "  --weight,-w    Thickness of the thread in meters (default: 45e-6)\n"
-              << "  --res,-r       Before processing, scale the input image to this pixel\n"
-              << "                 size along its shortest axis (default: 600)\n"
-              << "  --size,-s      Diameter of your frame in meters (default: 0.622)\n"
-              << "  --format,-f    Output format. Can be any of csv|tsv|json|svg|tex\n"
-              << "                 (default: csv)\n\n"
-              << "INPUT            Source image. Can be any image format. Use \"-\"\n"
-              << "                 to read from stdin.\n"
+              << "  --help,-h            Show this message and quit\n"
+              << "  --invert,-i          Invert the image (use black thread on white canvas)\n"
+              << "  --output,-o <OUTPUT> Specify an output location (default: print to stdout)\n"
+              << "  --num-pins,-k <K>    Number of pins on your frame (default: 300)\n"
+              << "  --num-lines,-n <N>   Number of lines to draw before stopping (default: 6000)\n"
+              << "  --weight,-w <WEIGHT> Thickness of the thread in meters (default: 45e-6)\n"
+              << "  --res,-r <RES>       Before processing, scale the input image to this pixel\n"
+              << "                       size along its shortest axis (default: 600)\n"
+              << "  --size,-s <SIZE>     Diameter of your frame in meters (default: 0.622)\n"
+              << "  --format,-f <FMT>    Output format. Can be any of csv|tsv|json|svg|tex\n"
+              << "                       (default: csv)\n"
+              << "  --oversample,-x <X>  Effectively increase the input resolution by oversampling\n"
+              << "                       the image mask paths with factor 'X' (default: 1)\n\n"
+              << "<INPUT>                Source image. Can be any image format. Use \"-\"\n"
+              << "                       to read from stdin.\n"
               << endl;
   }
 
@@ -186,6 +188,7 @@ int main(int argc, char* argv[])
 
     int k=300, N=6000, res=600;
     float weight = 45e-6, frame_size = 0.622;
+    int oversample = 2;
     string input = "";
     string output = "-";
     string format = "csv";
@@ -216,6 +219,8 @@ int main(int argc, char* argv[])
           format = argv[++i];
         else if (arg == "-o" || arg == "--output")
           output = argv[++i];
+        else if (arg == "-x" || arg == "--oversample")
+          sscanf(argv[++i], "%d", &oversample);
         else
           input = arg;
       }
@@ -248,13 +253,13 @@ int main(int argc, char* argv[])
           return status;
       }
 
-    const int max_line_length = (int) sqrt(2*res*res);
+    const int max_line_length = (int) oversample * sqrt(2*res*res);
     vector<vector<int>> lines(k*k, vector<int>(max_line_length, -1));
-    Raveler::fill_line_masks(k, res, lines);
+    Raveler::fill_line_masks(k, res, oversample, lines);
 
     vector<double> scores(N);
     vector<int> path(N+1);
-    Raveler::do_ravel(image, weight, k, N, lines, path, scores);
+    Raveler::do_ravel(image, weight, k, N, oversample, lines, path, scores);
 
     const double thread_length = Raveler::get_length(path, k, frame_size);
 

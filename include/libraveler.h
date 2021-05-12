@@ -97,6 +97,7 @@ namespace Raveler
   get_line(const int loc0,
           const int loc1,
           const int res,
+          const int oversample,
           vector<int> &line_buffer1,
           vector<int> &line_buffer2);
 
@@ -122,12 +123,14 @@ namespace Raveler
   void
   fill_line_masks(const int k,
                   const int res,
+                  const int oversample,
                   vector<vector<int>> &lines);
 
   double
   get_score(const int a,
             const int b,
             const int k,
+            const int oversample,
             const double weight,
             const vector<double> &residual,
             const vector<vector<int>> &lines);
@@ -137,6 +140,7 @@ namespace Raveler
             const double weight,
             const int k,
             const int N,
+            const int oversample,
             const vector<vector<int>> &lines,
             vector<int> &path,
             vector<double> &scores);

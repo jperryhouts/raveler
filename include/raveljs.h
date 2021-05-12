@@ -24,13 +24,12 @@
 #define K2 90000
 #define RES 600
 #define RES2 360000
+#define OVERSAMPLE 1
 
 using namespace std;
 
 struct
 {
-  // Must allocate >= sqrt(2*RES2) elements for each line mask.
-  // About 850 in our case.
   vector<vector<int>> line_masks;
   unsigned char pixel_buffer[RES2];
 } global;

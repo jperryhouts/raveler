@@ -72,7 +72,7 @@ extern "C"
       d.path.resize(N+1);
       d.scores.resize(N);
       Raveler::do_ravel(image, 1e3*weight/frame_size,
-                        K, N, global.line_masks,
+                        K, N, OVERSAMPLE, global.line_masks,
                         d.path, d.scores);
       d.length = Raveler::get_length(d.path, K, frame_size);
 
@@ -87,8 +87,10 @@ extern "C"
   int
   init()
     {
-      global.line_masks.resize(K2, vector<int>(850, -1));
-      Raveler::fill_line_masks(K, RES, global.line_masks);
+      // Must allocate >= sqrt(2*RES2) elements for each line mask.
+      // About 850 in our case.
+      global.line_masks.resize(K2, vector<int>(OVERSAMPLE*850, -1));
+      Raveler::fill_line_masks(K, RES, OVERSAMPLE, global.line_masks);
       return (int) global.pixel_buffer;
     }
 }

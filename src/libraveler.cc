@@ -26,6 +26,7 @@ namespace Raveler
   get_line(const int loc0,
           const int loc1,
           const int res,
+          const int oversample,
           vector<int> &line_buffer1,
           vector<int> &line_buffer2)
     {
@@ -33,13 +34,13 @@ namespace Raveler
       int cx1 = loc1%res, cy1 = loc1/res;
       double dx = cx1 - cx0;
       double dy = cy1 - cy0;
-      int R = (int) sqrt(dx*dx + dy*dy);
+      int R = (int) (oversample * sqrt(dx*dx + dy*dy));
 
       for (int i=0; i<R; ++i)
         {
-          double denominator = (R == 1) ? 1.0 : (R-1.0);
-          int p_i = cx0 + i*dx/denominator;
-          int p_j = cy0 + i*dy/denominator;
+          double denominator = (R == oversample) ? 1.0 : (R/oversample-1.0);
+          int p_i = cx0 + i/oversample*dx/denominator;
+          int p_j = cy0 + i/oversample*dy/denominator;
           int loc = ij_to_loc(p_i, p_j, res);
           line_buffer1[i] = loc;
           line_buffer2[i] = loc;
@@ -50,6 +51,7 @@ namespace Raveler
   void
   fill_line_masks(const int k,
                   const int res,
+                  const int oversample,
                   vector<vector<int>> &lines)
   {
       vector<int> pin_locs(k);
@@ -61,8 +63,7 @@ namespace Raveler
           {
             int l1 = i*k + j;
             int l2 = j*k + i;
-            // int R =
-            get_line(pin_locs[i], pin_locs[j], res,
+            get_line(pin_locs[i], pin_locs[j], res, oversample,
                      lines[l1], lines[l2]);
           }
   }
@@ -71,6 +72,7 @@ namespace Raveler
   get_score(const int a,
             const int b,
             const int k,
+            const int oversample,
             const double weight,
             const vector<double> &residual,
             const vector<vector<int>> &lines)
@@ -89,6 +91,7 @@ namespace Raveler
             const double weight,
             const int k,
             const int N,
+            const int oversample,
             const vector<vector<int>> &lines,
             vector<int> &path,
             vector<double> &scores)
@@ -113,7 +116,7 @@ namespace Raveler
               if (recently_visited)
                 continue;
 
-              double pin_score = get_score(previous_pin, pin, k, weight,
+              double pin_score = get_score(previous_pin, pin, k, oversample, weight,
                                           residual, lines);
               if (pin_score > score)
                 {
@@ -127,7 +130,7 @@ namespace Raveler
 
           int line_idx = previous_pin*k + next_pin;
           for (int i=0; lines[line_idx][i] != -1; ++i)
-            residual[lines[line_idx][i]] -= weight;
+            residual[lines[line_idx][i]] -= weight/oversample;
         }
     }
 
