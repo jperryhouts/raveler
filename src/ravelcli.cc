@@ -42,7 +42,7 @@ print_help()
               << "  --res,-r <RES>       Before processing, scale the input image to this pixel\n"
               << "                       size along its shortest axis (default: 600)\n"
               << "  --size,-s <SIZE>     Diameter of your frame in meters (default: 0.622)\n"
-              << "  --format,-f <FMT>    Output format. Can be any of csv|tsv|json|svg|tex\n"
+              << "  --format,-f <FMT>    Output format. Can be any of csv|tsv|json|svg|tex|png|show\n"
               << "                       (default: csv)\n"
               << "  --oversample,-x <X>  Effectively increase the input resolution by oversampling\n"
               << "                       the image mask paths with factor 'X' (default: 1)\n\n"
@@ -118,21 +118,6 @@ path2latex(const vector<int> &path,
         }
       result << "\n\\end{tabularx}\n\n";
     }
-
-    // result << "\\begin{figure*}\n";
-    // result << "\\begin{tikzpicture}\n";
-    // result << "  \\draw[black, ultra thin] ";
-    // pair<double,double> xy;
-    // for (int i=0; i<path.size(); ++i)
-    //   {
-    //     xy = Raveler::pin_to_xy(path[i], k);
-    //     result << "(" << 15.24*xy.first << "," << 15.24*xy.second << ")";
-    //     if (i < path.size()-1)
-    //       result << " -- ";
-    //   }
-    // result << ";\n";
-    // result << "\\end{tikzpicture}\n\n";
-    // result << "\\end{figure*}";
 
     result << "\\end{document}\n\n";
 
@@ -266,7 +251,7 @@ int main(int argc, char* argv[])
     // output data stream:
     streambuf* buf;
     ofstream of;
-    if(output == "-") {
+    if(output == "-" || format == "png" || format == "show") {
       buf = std::cout.rdbuf();
     } else {
       of.open(output, ios::out);
@@ -358,6 +343,44 @@ int main(int argc, char* argv[])
     else if (format == "tex")
       {
         result << path2latex(path, 5, k);
+      }
+    else if (format == "png" || format == "show")
+      {
+        const int im_size = 1000;
+        const Magick::Quantum bg = (white_thread ? 0 : MaxRGB);
+        const Magick::Quantum fg = (white_thread ? MaxRGB : 0);
+
+        Magick::Image im_out(
+          Magick::Geometry(im_size, im_size),
+          Magick::Color(bg, bg, bg, 0));
+
+        im_out.strokeWidth(1);
+        im_out.strokeAntiAlias(true);
+
+        double pixel_diameter_meters = frame_size/im_size;
+        double thread_pixel_fraction = weight/pixel_diameter_meters;
+        im_out.fillColor( Magick::Color(bg, bg, bg, MaxRGB) );
+        im_out.strokeColor(Magick::Color(fg, fg, fg, MaxRGB*(1.0-thread_pixel_fraction)));
+
+        pair<double,double> xy0, xy1;
+        for (int i=0; i<path.size()-1; ++i)
+          {
+            xy0 = Raveler::pin_to_xy(path[i], k);
+            xy1 = Raveler::pin_to_xy(path[i+1], k);
+            im_out.draw(Magick::DrawableLine(
+              im_size*xy0.first, im_size*(1.0-xy0.second),
+              im_size*xy1.first, im_size*(1.0-xy1.second)));
+          }
+
+        if (format == "png")
+          {
+            im_out.magick("PNG");
+            im_out.write(output);
+          }
+        else // show
+          {
+            im_out.display();
+          }
       }
     else
       {
