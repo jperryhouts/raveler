@@ -130,7 +130,6 @@ namespace Raveler
   get_score(const int a,
             const int b,
             const int k,
-            const int oversample,
             const double weight,
             const vector<double> &residual,
             const vector<vector<int>> &lines);
@@ -140,7 +139,6 @@ namespace Raveler
             const double weight,
             const int k,
             const int N,
-            const int oversample,
             const vector<vector<int>> &lines,
             vector<int> &path,
             vector<double> &scores);

@@ -38,7 +38,7 @@ print_help()
               << "  --output,-o <OUTPUT> Specify an output location (default: print to stdout)\n"
               << "  --num-pins,-k <K>    Number of pins on your frame (default: 300)\n"
               << "  --num-lines,-n <N>   Number of lines to draw before stopping (default: 6000)\n"
-              << "  --weight,-w <WEIGHT> Thickness of the thread in meters (default: 45e-6)\n"
+              << "  --weight,-w <WEIGHT> Thickness of the thread in meters (default: 100e-6)\n"
               << "  --res,-r <RES>       Before processing, scale the input image to this pixel\n"
               << "                       size along its shortest axis (default: 600)\n"
               << "  --size,-s <SIZE>     Diameter of your frame in meters (default: 0.622)\n"
@@ -169,11 +169,8 @@ int main(int argc, char* argv[])
   {
     Magick::InitializeMagick(*argv);
 
-    // originals: w = 0.072mm / frame = 0.622m
-
-    int k=300, N=6000, res=600;
-    float weight = 45e-6, frame_size = 0.622;
-    int oversample = 2;
+    int k=300, N=6000, res=600, oversample = 1;
+    float weight = 100e-6, frame_size = 0.622;
     string input = "";
     string output = "-";
     string format = "csv";
@@ -217,8 +214,6 @@ int main(int argc, char* argv[])
         return 1;
       }
 
-    weight *= 1000 / frame_size;
-
     vector<double> image;
     if (input == "-")
       {
@@ -244,7 +239,8 @@ int main(int argc, char* argv[])
 
     vector<double> scores(N);
     vector<int> path(N+1);
-    Raveler::do_ravel(image, weight, k, N, oversample, lines, path, scores);
+    const double relative_weight = weight * res / frame_size / oversample;
+    Raveler::do_ravel(image, relative_weight, k, N, lines, path, scores);
 
     const double thread_length = Raveler::get_length(path, k, frame_size);
 
@@ -286,7 +282,7 @@ int main(int argc, char* argv[])
           << (white_thread ? "black" : "white")
           << "\"/>" << endl;
 
-        double stroke_width = weight / frame_size;
+        double stroke_width = weight*1000;
         string stroke_color = white_thread ? "white" : "black";
         for (int i=0; i<path.size()-1; ++i)
           {

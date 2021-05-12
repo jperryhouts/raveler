@@ -72,7 +72,6 @@ namespace Raveler
   get_score(const int a,
             const int b,
             const int k,
-            const int oversample,
             const double weight,
             const vector<double> &residual,
             const vector<vector<int>> &lines)
@@ -91,11 +90,16 @@ namespace Raveler
             const double weight,
             const int k,
             const int N,
-            const int oversample,
             const vector<vector<int>> &lines,
             vector<int> &path,
             vector<double> &scores)
     {
+      // For whatever reason, the visual effect of a strand of
+      // thread crossing any particular region seems to be lower
+      // than what you'd predict. This 0.7 scale factor seems
+      // to produce output that looks roughly true to reality.
+      const double visual_weight = 0.7 * weight;
+
       vector<double> residual(image);
 
       path[0] = 0;
@@ -116,8 +120,8 @@ namespace Raveler
               if (recently_visited)
                 continue;
 
-              double pin_score = get_score(previous_pin, pin, k, oversample, weight,
-                                          residual, lines);
+              double pin_score = get_score(previous_pin, pin, k, visual_weight,
+                                           residual, lines);
               if (pin_score > score)
                 {
                   score = pin_score;
@@ -130,7 +134,7 @@ namespace Raveler
 
           int line_idx = previous_pin*k + next_pin;
           for (int i=0; lines[line_idx][i] != -1; ++i)
-            residual[lines[line_idx][i]] -= weight/oversample;
+            residual[lines[line_idx][i]] -= visual_weight;
         }
     }
 

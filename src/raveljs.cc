@@ -71,8 +71,8 @@ extern "C"
       design d;
       d.path.resize(N+1);
       d.scores.resize(N);
-      Raveler::do_ravel(image, 1e3*weight/frame_size,
-                        K, N, OVERSAMPLE, global.line_masks,
+      Raveler::do_ravel(image, weight*RES/frame_size/OVERSAMPLE,
+                        K, N, global.line_masks,
                         d.path, d.scores);
       d.length = Raveler::get_length(d.path, K, frame_size);
 
