@@ -22,6 +22,13 @@ const FRAME_SIZE = 0.622;
 const WEIGHT = 100e-6; // 44.784e-6;
 const IMG_RES = 600;
 
+try {
+  if (navigator.storage && navigator.storage.persist)
+    navigator.storage.persist();
+} catch (ex) {
+  console.error(ex);
+}
+
 function rgba2gray(pixels) {
   let gray = new Uint8ClampedArray(pixels.length/4);
   for (var i=0; i < gray.length; i++) {
