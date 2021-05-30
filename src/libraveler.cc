@@ -103,11 +103,10 @@ namespace Raveler
       vector<double> residual(image);
 
       path[0] = 0;
-      int path_size = 1;
       for (int path_size=1; path_size <= N; path_size++)
         {
           int previous_pin = path[path_size-1];
-          int next_pin;
+          int next_pin = (previous_pin+1)%k;
           double score = -1e20;
 
           for (int pin=0; pin<k; ++pin)
@@ -144,7 +143,7 @@ namespace Raveler
             const double frame_size)
     {
       double length = 0;
-      for (int i=0; i<path.size()-1; ++i)
+      for (unsigned int i=0; i<path.size()-1; ++i)
         {
           pair<double,double> xy0 = pin_to_xy(path[i], k);
           pair<double,double> xy1 = pin_to_xy(path[i+1], k);

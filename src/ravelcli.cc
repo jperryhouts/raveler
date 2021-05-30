@@ -83,7 +83,7 @@ path2latex(const vector<int> &path,
         result << " X";
       result << "}\n";
 
-      int pos = 0;
+      unsigned int pos = 0;
       while (pos < path.size())
         {
           result << pos/row_width+1 << " & ";
@@ -141,7 +141,6 @@ load_image(const string &fname,
 
         if (size.width() != size.height())
           {
-            size_t cx = width/2, cy = height/2;
             size_t small_side = width < height ? width : height;
             size_t xOffset = (width-small_side)/2;
             size_t yOffset = (height-small_side)/2;
@@ -222,7 +221,7 @@ int main(int argc, char* argv[])
         res = (int) sqrt(raw.size());
 
         image.resize(raw.size());
-        for (int i=0; i<raw.size(); ++i)
+        for (unsigned int i=0; i<raw.size(); ++i)
           image[i] = 1.0 - raw[i]/255.0;
       }
     else
@@ -261,7 +260,7 @@ int main(int argc, char* argv[])
         result << "#total thread length: " << thread_length << endl;
         result << "#pin" << sep << "score" << sep
               << "coord_x" << sep << "coord_y" << endl;
-        for (int i=0; i<path.size(); ++i)
+        for (unsigned int i=0; i<path.size(); ++i)
           {
             pair<double,double> xy = Raveler::pin_to_xy(path[i], k);
             result << path[i]  << sep << scores[i] << sep
@@ -284,7 +283,7 @@ int main(int argc, char* argv[])
 
         double stroke_width = weight*1000;
         string stroke_color = white_thread ? "white" : "black";
-        for (int i=0; i<path.size()-1; ++i)
+        for (unsigned int i=0; i<path.size()-1; ++i)
           {
             pair<double,double> xy0 = Raveler::pin_to_xy(path[i], k);
             pair<double,double> xy1 = Raveler::pin_to_xy(path[i+1], k);
@@ -307,7 +306,7 @@ int main(int argc, char* argv[])
 
         {
           result << "  \"pins\": [";
-          for (int i=0; i<path.size()-1; ++i)
+          for (unsigned int i=0; i<path.size()-1; ++i)
               result << path[i] << ",";
           result << path[path.size()-1];
           result << "]," << endl;
@@ -315,7 +314,7 @@ int main(int argc, char* argv[])
 
         {
           result << "  \"scores\": [";
-          for (int i=0; i<scores.size()-1; ++i)
+          for (unsigned int i=0; i<scores.size()-1; ++i)
               result << scores[i] << ",";
           result << scores[scores.size()-1];
           result << "]," << endl;
@@ -324,7 +323,7 @@ int main(int argc, char* argv[])
         {
           result << "  \"coords\": [";
           pair<double,double> xy;
-          for (int i=0; i<path.size()-1; ++i)
+          for (unsigned int i=0; i<path.size()-1; ++i)
             {
               xy = Raveler::pin_to_xy(path[i], k);
               result << "[" << xy.first << "," << xy.second << "],";
@@ -359,7 +358,7 @@ int main(int argc, char* argv[])
         im_out.strokeColor(Magick::Color(fg, fg, fg, MaxRGB*(1.0-thread_pixel_fraction)));
 
         pair<double,double> xy0, xy1;
-        for (int i=0; i<path.size()-1; ++i)
+        for (unsigned int i=0; i<path.size()-1; ++i)
           {
             xy0 = Raveler::pin_to_xy(path[i], k);
             xy1 = Raveler::pin_to_xy(path[i+1], k);
