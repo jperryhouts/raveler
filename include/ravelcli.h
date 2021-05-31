@@ -19,7 +19,9 @@
 #include <iostream>
 #include <vector>
 
+#ifndef NOMAGICK
 #include <Magick++.h>
+#endif
 
 using namespace std;
 
@@ -28,11 +30,13 @@ path2latex(const vector<int> &path,
            const int row_width,
            const int k);
 
+#ifndef NOMAGICK
 int
 load_image(const std::string &fname,
            std::vector<double> &pixels,
            const int res,
            const bool white_thread);
+#endif
 
 void
 print_help();

@@ -124,6 +124,7 @@ path2latex(const vector<int> &path,
     return result.str();
   }
 
+#ifndef NOMAGICK
 int
 load_image(const string &fname,
            vector<double> &pixels,
@@ -163,10 +164,13 @@ load_image(const string &fname,
       }
     return 0;
   }
+#endif
 
 int main(int argc, char* argv[])
   {
+#ifndef NOMAGICK
     Magick::InitializeMagick(*argv);
+#endif
 
     int k=300, N=6000, res=600, oversample = 1;
     float weight = 100e-6, frame_size = 0.622;
@@ -226,10 +230,17 @@ int main(int argc, char* argv[])
       }
     else
       {
+#ifndef NOMAGICK
         image.resize(res*res);
         int status = load_image(input, image, res, white_thread);
         if (status != 0)
           return status;
+#else
+        cerr  << "Raveler was compiled without ImageMagick support "
+              << "and therefore cannot process encoded image formats."
+              << endl;
+        return 2;
+#endif
       }
 
     const int max_line_length = (int) oversample * sqrt(2*res*res);
@@ -341,6 +352,7 @@ int main(int argc, char* argv[])
       }
     else if (format == "png" || format == "show")
       {
+#ifndef NOMAGICK
         const int im_size = 1000;
         const Magick::Quantum bg = (white_thread ? 0 : MaxRGB);
         const Magick::Quantum fg = (white_thread ? MaxRGB : 0);
@@ -376,6 +388,11 @@ int main(int argc, char* argv[])
           {
             im_out.display();
           }
+#else
+        cerr  << "Raveler was compiled without ImageMagick support "
+              << "and therefore cannot produce .png format output."
+              << endl;
+#endif
       }
     else
       {

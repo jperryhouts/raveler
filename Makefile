@@ -18,6 +18,17 @@ sounds_ogg=$(shell /bin/bash -c 'for n in {0..299}; do printf "web/sounds_ogg/%0
 sounds_opus=$(shell /bin/bash -c 'for n in {0..299}; do printf "web/sounds_opus/%03d.mp3\n" $$n; done')
 sounds_mp3=$(shell /bin/bash -c 'for n in {0..299}; do printf "web/sounds_mp3/%03d.mp3\n" $$n; done')
 
+ifeq ($(strip $(NOMAGICK)),)
+# @bash -c 'if [ "`which Magick++-config`" == "" ]; then \
+# 		echo -e "\nMagick++ library not found." ; \
+# 		echo -e "On Debian/Ubuntu, try:" ; \
+# 		echo -e " sudo apt install graphicsmagick-libmagick-dev-compat\n"; \
+# 		exit 1 ; fi'
+flags=$(shell Magick++-config --cxxflags --cppflags --ldflags --libs)
+else
+flags=-D NOMAGICK
+endif
+
 .PHONY: clean cli wasm checkMagick checkEmscripten sounds sounds_wav sounds_ogg sounds_opus sounds_mp3
 
 clean:
@@ -44,13 +55,8 @@ build/%.gray: data/%.jpg
 	convert "$<" -gravity center -extent 1:1 -resize 600 -size 600x600 -depth 8 GRAY:- > "$@"
 
 build/cli/raveler: src/ravelcli.cc include/ravelcli.h src/libraveler.cc include/libraveler.h
-	@bash -c 'if [ "`which Magick++-config`" == "" ]; then \
-		echo -e "\nMagick++ library not found." ; \
-		echo -e "On Debian/Ubuntu, try:" ; \
-		echo -e " sudo apt install graphicsmagick-libmagick-dev-compat\n"; \
-		exit 1 ; fi'
 	mkdir -p `dirname "$@"`
-	c++ -o "$@" "src/libraveler.cc" "src/ravelcli.cc" -I./include `Magick++-config --cxxflags --cppflags --ldflags --libs`
+	c++ -o "$@" "src/libraveler.cc" "src/ravelcli.cc" -I./include $(flags)
 
 build/wasm/raveler.html: src/raveljs.cc include/raveljs.h src/libraveler.cc include/libraveler.h
 	@bash -c 'if [ "`which em++`" == "" ]; then \
